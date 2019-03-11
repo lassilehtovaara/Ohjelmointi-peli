@@ -1,0 +1,171 @@
+using System;
+using System.Collections.Generic;
+using Jypeli;
+using Jypeli.Assets;
+using Jypeli.Controls;
+using Jypeli.Widgets;
+using Jypeli.Effects;
+
+public class SininenKone : PhysicsGame
+{
+
+
+    Vector nopeusYlos = new Vector(0, 400);
+    Vector nopeusAlas = new Vector(0, -400);
+    Vector nopeusVasen = new Vector(-400, 0);
+    Vector nopeusOikea = new Vector(400, 0);
+
+    //Pelaajan 1 kone "Macbook"
+    PhysicsObject kone;
+    PhysicsObject kone2;
+
+    //Pelikentän reunat
+    //PhysicsObject reunat;
+
+    public override void Begin()
+    {
+        //Tarvitaan:
+        //Ammuksia mitkä saa tietyn velocityn laatikon orientaation mukaan
+
+        //Goal: 
+        //Tee laatikko, joka pystyy pyörimään
+        //Sen jälkeen liikkumaan
+        //Sitten ampumaan
+
+        LuoKentta();
+        AsetaOhjaimet();
+
+        //Moi riku
+
+        //Tekstit näytöllä
+        Label naytto = new Label();
+        naytto.Y = 300;
+        naytto.Font = Font.DefaultHuge;
+        naytto.Text = "Sinisen tietokoneen seikkailut";
+        naytto.TextColor = Color.SkyBlue;
+        Add(naytto);
+
+        Label konePisteet = new Label();
+        konePisteet.X = 450;
+        konePisteet.Y = 300;
+        konePisteet.Font = Font.Default;
+        konePisteet.TextColor = Color.White;
+        konePisteet.Text = "5";
+        Add(konePisteet);
+
+        Label kone2Pisteet = new Label();
+        kone2Pisteet.X = -450;
+        kone2Pisteet.Y = 300;
+        kone2Pisteet.TextColor = Color.White;
+        kone2Pisteet.Font = Font.Default;
+        kone2Pisteet.Text = "10";
+        Add(kone2Pisteet);
+    }
+
+    PhysicsObject LuoKone(double x, double y, Color vari, String koneenTyyppi)
+    {
+        PhysicsObject maila = PhysicsObject.CreateStaticObject(67.0, 95.0);
+        maila.Shape = Shape.Rectangle;
+        maila.Image = LoadImage(koneenTyyppi);
+        maila.Color = vari;
+        maila.X = x;
+        maila.Y = y;
+        maila.Restitution = 1.0;
+        Add(maila);
+        return maila;
+    }
+
+    void LuoKentta()
+    {
+
+        //Mailat
+        kone = LuoKone(Level.Left + 160.0, 0.0, Color.White, "macbook");
+        kone2 = LuoKone(Level.Right - 160.0, 0.0, Color.SkyBlue, "hp");
+
+
+        //Level koodi
+        PhysicsObject ylaReuna = Level.CreateTopBorder();
+        ylaReuna.Restitution = 1.0;
+        ylaReuna.IsVisible = false;
+
+        PhysicsObject alaReuna = Level.CreateBottomBorder();
+        alaReuna.Restitution = 1.0;
+        alaReuna.IsVisible = false;
+
+        PhysicsObject vasenReuna = Level.CreateLeftBorder();
+        vasenReuna.Restitution = 1.0;
+        vasenReuna.IsVisible = false;
+
+        PhysicsObject oikeaReuna = Level.CreateRightBorder();
+        oikeaReuna.Restitution = 1.0;
+        oikeaReuna.IsVisible = false;
+
+
+
+        Level.Background.Color = Color.Black;
+        Camera.ZoomToLevel();
+    }
+
+    public void Heita(PhysicsObject heittavaOlio, string tagi)
+    {
+        Random rnd = new Random();
+        int rekyyli = rnd.Next(-50, 50);
+        PhysicsObject heitettava = new PhysicsObject(10, 10, Shape.Star);
+        heitettava.Position = heittavaOlio.Position + new Vector(45, 0);
+        heitettava.Hit(new Vector(450, rekyyli));
+        heitettava.Tag = tagi;
+        heitettava.MaximumLifetime = TimeSpan.FromSeconds(2.0);
+        Add(heitettava, 1);
+    }
+
+
+    //Tupla koodia
+    public void Heita2(PhysicsObject heittavaOlio, string tagi)
+    {
+        Random rnd = new Random();
+        int rekyyli = rnd.Next(-50, 50);
+        PhysicsObject heitettava = new PhysicsObject(10, 10, Shape.Star);
+        heitettava.Position = heittavaOlio.Position + new Vector(-40, 0);
+        heitettava.Hit(new Vector(-450, rekyyli));
+        heitettava.Tag = tagi;
+        heitettava.MaximumLifetime = TimeSpan.FromSeconds(2.0);
+        Add(heitettava, 1);
+    }
+
+    void AsetaOhjaimet()
+    {
+        Keyboard.Listen(Key.W, ButtonState.Down, AsetaNopeus, "Pelaaja 1: Liikuta mailaa ylös", kone, nopeusYlos);
+        Keyboard.Listen(Key.W, ButtonState.Released, AsetaNopeus, null, kone, Vector.Zero);
+        Keyboard.Listen(Key.S, ButtonState.Down, AsetaNopeus, "Pelaaja 1: Liikuta mailaa alas", kone, nopeusAlas);
+        Keyboard.Listen(Key.S, ButtonState.Released, AsetaNopeus, null, kone, Vector.Zero);
+        Keyboard.Listen(Key.A, ButtonState.Down, AsetaNopeus, "Pelaaja 1: Liikuta mailaa ylös", kone, nopeusVasen);
+        Keyboard.Listen(Key.A, ButtonState.Released, AsetaNopeus, null, kone, Vector.Zero);
+        Keyboard.Listen(Key.D, ButtonState.Down, AsetaNopeus, "Pelaaja 1: Liikuta mailaa alas", kone, nopeusOikea);
+        Keyboard.Listen(Key.D, ButtonState.Released, AsetaNopeus, null, kone, Vector.Zero);
+        Keyboard.Listen(Key.Space, ButtonState.Pressed, Heita, "Heita ammus", kone, "pelaajanAmmus");
+
+        Keyboard.Listen(Key.Up, ButtonState.Down, AsetaNopeus, "Pelaaja 2: Liikuta mailaa ylös", kone2, nopeusYlos);
+        Keyboard.Listen(Key.Up, ButtonState.Released, AsetaNopeus, null, kone2, Vector.Zero);
+        Keyboard.Listen(Key.Down, ButtonState.Down, AsetaNopeus, "Pelaaja 2: Liikuta mailaa alas", kone2, nopeusAlas);
+        Keyboard.Listen(Key.Down, ButtonState.Released, AsetaNopeus, null, kone2, Vector.Zero);
+        Keyboard.Listen(Key.Left, ButtonState.Down, AsetaNopeus, "Pelaaja 2: Liikuta mailaa ylös", kone2, nopeusVasen);
+        Keyboard.Listen(Key.Left, ButtonState.Released, AsetaNopeus, null, kone2, Vector.Zero);
+        Keyboard.Listen(Key.Right, ButtonState.Down, AsetaNopeus, "Pelaaja 2: Liikuta mailaa alas", kone2, nopeusOikea);
+        Keyboard.Listen(Key.Right, ButtonState.Released, AsetaNopeus, null, kone2, Vector.Zero);
+        Keyboard.Listen(Key.RightShift, ButtonState.Pressed, Heita2, "Pelaaja 2 ammu", kone2, "pelaajanAmmus");
+
+        Keyboard.Listen(Key.O, ButtonState.Pressed, ShowControlHelp, "Näytä ohjeet");
+        Keyboard.Listen(Key.Escape, ButtonState.Pressed, ConfirmExit, "Lopeta peli");
+    }
+
+    void AsetaNopeus(PhysicsObject maila, Vector nopeus)
+    {
+        if (((nopeus.Y > 0) && (maila.Top > Level.Top)) || ((nopeus.Y < 0) && (maila.Bottom < Level.Bottom)) || ((nopeus.X > 0) && (maila.Right > Level.Right)) || ((nopeus.X < 0) && (maila.Left < Level.Left)))
+        {
+            maila.Velocity = Vector.Zero;
+            return;
+        }
+        maila.Velocity = nopeus;
+    }
+
+}
